@@ -244,9 +244,9 @@
             });
         });
 
-        // Payment method change handler
-        document.getElementById('paymentMethod').addEventListener('change', function() {
-            const paymentMethod = this.value;
+        // Function to handle payment method visibility
+        function updatePaymentFields() {
+            const paymentMethod = document.getElementById('paymentMethod').value;
             const changeField = document.getElementById('changeField');
             const pixDetails = document.getElementById('pixDetails');
 
@@ -255,6 +255,14 @@
             
             // Add/remove required attributes
             changeField.querySelector('input').required = paymentMethod === 'Dinheiro';
+        }
+
+        // Set up payment method change handler
+        document.getElementById('paymentMethod').addEventListener('change', updatePaymentFields);
+
+        // Initialize payment fields on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updatePaymentFields(); // Ensure correct fields are shown based on initial selection
         });
 
         document.getElementById('mealModal').addEventListener('show.bs.modal', function(event) {
