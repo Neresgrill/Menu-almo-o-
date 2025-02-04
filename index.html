@@ -13,7 +13,7 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="my-4">Cardápio do Almoço - Terça</h1>
+        <h1 class="my-4">Cardápio do Almoço - Terça 1.2</h1>
 
         <!-- Itens do Menu -->
         <div class="row">
@@ -357,8 +357,8 @@
             const orderDetails = orderItems.map(item => `
 - ${item.name} (${item.size}): R$${item.price.toFixed(2).replace('.', ',')}
   ${item.extraCarneCharge ? '*Acréscimo carne assada: R$1,00*\n' : ''}
-  Proteínas: ${item.proteins.join(',\n') || 'Nenhuma'}
-  Acompanhamentos: ${item.sides.join(',\n') || 'Nenhum'}
+  Proteínas:\n ${item.proteins.join(',\n') || 'Nenhuma'}
+  \nAcompanhamentos:\n ${item.sides.join(',\n') || 'Nenhum'}
     `.trim()).join('\n');
 
             // Build the full message
