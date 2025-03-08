@@ -28,7 +28,34 @@
                     </button>
                 </div>
             </div>
-            <!-- Adicione mais itens aqui -->
+            <!-- Bebidas -->
+            <div class="col-md-4">
+                <div class="menu-item">
+                    <h3>Coca-Cola 350ml</h3>
+                    <p>Preço: R$5,00</p>
+                    <button class="btn btn-primary" onclick="addDrink('Coca-Cola 350ml', 5)">
+                        Adicionar ao Pedido
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="menu-item">
+                    <h3>Suco de Laranja 500ml</h3>
+                    <p>Preço: R$7,00</p>
+                    <button class="btn btn-primary" onclick="addDrink('Suco de Laranja 500ml', 7)">
+                        Adicionar ao Pedido
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="menu-item">
+                    <h3>Água Mineral 500ml</h3>
+                    <p>Preço: R$3,00</p>
+                    <button class="btn btn-primary" onclick="addDrink('Água Mineral 500ml', 3)">
+                        Adicionar ao Pedido
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Resumo do Pedido -->
@@ -72,7 +99,7 @@
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input protein" type="checkbox" value="Camarão empanado">
-                                    <label class="form-check-label">Camarão empenado</label>
+                                    <label class="form-check-label">Camarão empanado</label>
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input protein" type="checkbox" value="Carne assada">
@@ -177,7 +204,7 @@
             <div class="mb-3">
                 <label>Forma de Pagamento:</label>
                 <select class="form-select" id="paymentMethod" required>
-                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="Dinheiro" selected>Dinheiro</option>
                     <option value="Pix">Pix</option>
                     <option value="Cartão de Crédito">Cartão de Crédito</option>
                     <option value="Cartão de Débito">Cartão de Débito</option>
@@ -186,7 +213,7 @@
 
             <div class="mb-3" id="changeField" style="display: none;">
                 <label>Troco necessário para quanto?</label>
-                <input type="number" class="form-control" min="0" step="0.01">
+                <input type="number" class="form-control" min="0" step="0.01" id="changeInput">
             </div>
 
             <div class="mb-3" id="pixDetails" style="display: none;">
@@ -213,13 +240,11 @@
                 const checkedProteins = Array.from(document.querySelectorAll('.protein:checked'));
                 const carneWarning = document.getElementById('carneWarning');
                 
-                // Check if only carne assada is selected
                 const onlyCarne = checkedProteins.length === 1 && 
                                  checkedProteins[0].value === 'Carne assada';
                 
                 carneWarning.style.display = onlyCarne ? 'block' : 'none';
 
-                // Enforce 2 protein maximum
                 if (checkedProteins.length > 2) {
                     this.checked = false;
                     alert('Máximo de 2 proteínas selecionadas');
@@ -239,7 +264,7 @@
                 } else {
                     addressField.style.display = 'none';
                     addressInput.required = false;
-                    addressInput.value = ''; // Clear address if switching to pickup
+                    addressInput.value = '';
                 }
             });
         });
@@ -249,20 +274,20 @@
             const paymentMethod = document.getElementById('paymentMethod').value;
             const changeField = document.getElementById('changeField');
             const pixDetails = document.getElementById('pixDetails');
+            const changeInput = document.getElementById('changeInput');
 
             changeField.style.display = paymentMethod === 'Dinheiro' ? 'block' : 'none';
             pixDetails.style.display = paymentMethod === 'Pix' ? 'block' : 'none';
             
-            // Add/remove required attributes
-            changeField.querySelector('input').required = paymentMethod === 'Dinheiro';
+            if (changeInput) {
+                changeInput.required = paymentMethod === 'Dinheiro';
+            }
         }
 
-        // Set up payment method change handler
-        document.getElementById('paymentMethod').addEventListener('change', updatePaymentFields);
-
-        // Initialize payment fields on page load
+        // Set up payment method change handler and initialize on load
         document.addEventListener('DOMContentLoaded', function() {
-            updatePaymentFields(); // Ensure correct fields are shown based on initial selection
+            updatePaymentFields(); // Initialize payment fields visibility
+            document.getElementById('paymentMethod').addEventListener('change', updatePaymentFields);
         });
 
         document.getElementById('mealModal').addEventListener('show.bs.modal', function(event) {
@@ -273,7 +298,6 @@
             };
             document.getElementById('mealName').textContent = `Personalizar ${currentMeal.name}`;
             
-            // Reset modal state
             this.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
             this.querySelector('.size-select').value = 'Média';
             document.getElementById('carneWarning').style.display = 'none';
@@ -286,10 +310,8 @@
             const proteins = Array.from(modal.querySelectorAll('.protein:checked')).map(p => p.value);
             const sides = Array.from(modal.querySelectorAll('.side:checked')).map(s => s.value);
             
-            // Calculate base price
             let mealPrice = currentMeal.basePrice * sizeMultiplier;
             
-            // Check for carne assada solo charge
             const carneSoloCharge = proteins.length === 1 && proteins[0] === 'Carne assada';
             if (carneSoloCharge) {
                 mealPrice += 1;
@@ -311,17 +333,38 @@
             bootstrap.Modal.getInstance(modal).hide();
         }
 
+        function addDrink(name, price) {
+            orderItems.push({
+                name: name,
+                price: price
+            });
+            total += price;
+            updateOrderDisplay();
+        }
+
         function updateOrderDisplay() {
-            const orderList = orderItems.map(item => `
-                <div class="card mb-2">
-                    <div class="card-body">
-                        <h5>${item.name} (${item.size}) - R$${item.price.toFixed(2).replace('.', ',')}</h5>
-                        ${item.extraCarneCharge ? '<p class="text-danger">Acréscimo carne assada: R$1,00</p>' : ''}
-                        <p>Proteínas: ${item.proteins.join(', ') || 'Nenhuma'}</p>
-                        <p>Acompanhamentos: ${item.sides.join(', ') || 'Nenhum'}</p>
-                    </div>
-                </div>
-            `).join('');
+            const orderList = orderItems.map(item => {
+                if (item.hasOwnProperty('size')) {
+                    return `
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <h5>${item.name} (${item.size}) - R$${item.price.toFixed(2).replace('.', ',')}</h5>
+                                ${item.extraCarneCharge ? '<p class="text-danger">Acréscimo carne assada: R$1,00</p>' : ''}
+                                <p>Proteínas: ${item.proteins.join(', ') || 'Nenhuma'}</p>
+                                <p>Acompanhamentos: ${item.sides.join(', ') || 'Nenhum'}</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <h5>${item.name} - R$${item.price.toFixed(2).replace('.', ',')}</h5>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
             
             document.getElementById('orderItems').innerHTML = orderList;
             document.getElementById('totalAmount').textContent = total.toFixed(2).replace('.', ',');
@@ -333,15 +376,14 @@
             const orderType = document.querySelector('input[name="orderType"]:checked').value;
             const address = this.querySelector('#addressField input')?.value;
             const payment = this.querySelector('#paymentMethod').value;
-            const change = this.querySelector('#changeField input')?.value;
+            const changeInput = document.getElementById('changeInput');
+            const change = changeInput ? changeInput.value : '';
 
-            // Build order type text
             let orderTypeText = `Tipo de Pedido: ${orderType}`;
             if (orderType === 'Entrega') {
                 orderTypeText += `\nEndereço: ${address}`;
             }
 
-            // Build payment method text
             let paymentText = `Forma de Pagamento: ${payment}`;
             
             if (payment === 'Dinheiro' && change) {
@@ -353,33 +395,11 @@
                 paymentText += 'Titular: RUAN NOGUEIRA';
             }
 
-            // Build order details
-            const orderDetails = orderItems.map(item => `
+            const orderDetails = orderItems.map(item => {
+                if (item.hasOwnProperty('size')) {
+                    return `
 - ${item.name} (${item.size}): R$${item.price.toFixed(2).replace('.', ',')}
   ${item.extraCarneCharge ? '*Acréscimo carne assada: R$1,00*\n' : ''}
   Proteínas:\n ${item.proteins.join(',\n') || 'Nenhuma'}
   \nAcompanhamentos:\n ${item.sides.join(',\n') || 'Nenhum'}
-    `.trim()).join('\n');
-
-            // Build the full message
-            const message = `*NOVO PEDIDO*\n\nCliente: ${customerName}\n\n${orderTypeText}\n\nItens:\n${orderDetails}\n\n${paymentText}\n\nTotal: R$${total.toFixed(2).replace('.', ',')}`;
-
-            // Encode the message for the URL
-            const encodedMessage = encodeURIComponent(message);
-            
-            // Open WhatsApp with the encoded message
-            const whatsappUrl = `https://wa.me/5584987598818?text=${encodedMessage}`;
-            window.open(whatsappUrl, '_blank');
-
-            // Resetar pedido
-            orderItems = [];
-            total = 0;
-            updateOrderDisplay();
-            this.reset();
-            document.getElementById('changeField').style.display = 'none';
-            document.getElementById('pixDetails').style.display = 'none';
-            document.getElementById('addressField').style.display = 'none';
-        });
-    </script>
-</body>
-</html>
+                
